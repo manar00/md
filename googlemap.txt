@@ -1,0 +1,214 @@
+@extends('main') @section('title', '| Create New Post')  @section('content')
+
+
+  <div class="container extra">
+
+
+    <h2 class="page_title">Munchie Toevoegen</h2>
+
+    <p class="lead">
+      Op deze pagina kunt u een artikel ter beschikking stellen aan anderen.
+      Vul alle velden in zodat andere gebruikers precies weten welk product u ter beschikking stelt.
+    </p>
+
+
+    {!! Form::open(array('route' => 'article.store', 'id' => 'article', 'files' => true)) !!}
+
+
+    <div class="form-group  has-feedback">
+      <label class="control-label">Foto</label>
+      <div class="input-group" id="img" style="padding:0 ">
+        <input type="text" name="pic2" class="form-control"  readonly="true" />
+        <label class="input-group-btn" style="display: table-cell;">
+        <span class="btn btn-success">ZOEK EEN FOTO
+          <input type="file" id="previewpicimg" name="pic" data-required-message="selecteer een foto aub." Style="display: none;" accept="image/x-png,image/gif,image/jpeg" required />
+      
+        </span>
+        </label>
+      </div>
+      <small id="fileHelp" class="form-text text-muted">Kies hier een afbeelding voor uw munchie.</small>
+    </div>
+    <div class="img_error"></div>
+
+
+
+
+<div class="form-group  has-feedback">
+
+  <label class=" control-label">Titel munchie (*)</label>
+  {{ Form::text('title',old('title'),array('class' =>'form-control ', 'required' => '','maxlength'=>'255'))}}
+  <small id="fileHelp" class="form-text text-muted">Kies een passende titel.</small>
+
+</div>
+
+
+
+<div class="form-group  has-feedback">
+  <label class=" control-label">Omschrijving (*)</label>
+  {{ Form::textarea('text',old('text'),array('class' =>'form-control', 'required' => '', 'placeholder'=>'Geef hier een korte omschrijving van het product en vertel ons waarom je het product weg wilt geven.'))}}
+</div>
+
+
+<div class="form-group  has-feedback">
+  <label class=" control-label"> Houdbaarheidsdatum (*) </label>
+  {{ Form::date('datum',old('datum'),array('class' =>'form-control ' , 'data-parsley-required-message' => 'moet een datum bevatten.','min'=>'2017-04-01', 'max'=>'2018-04-20', 'required' => '','maxlength'=>'255'))}}
+  <small id="fileHelp" class="form-text text-muted">Tot op welke datum is dit artikel goed?</small>
+</div>
+
+    <div class="form-group has-feedback">
+      <label class=" control-label">Categorie</label>
+      <select class="form-control" name="category_id">
+        @foreach($categories as $category)
+          <option value='{{ $category->id }}'>{{ $category->name }}</option>
+        @endforeach
+      </select>
+    </div>
+
+ 
+
+
+    <div class="form-group">
+      <label class=" control-label"> Tijdstip (*) </label>
+      {{ Form::time('tijdstip',old('tijdstip'),array('class' =>'form-control ', 'data-parsley-required-message' => 'moet een uur bevatten.', 'required' => '','maxlength'=>'255'))}}
+      <small id="fileHelp" class="form-text text-muted">Om hoe laat mogen ze dit artikel komen halen?</small>
+    </div>
+     
+
+    
+    <div class="form-group">
+      <style>
+       #map {
+        height: 400px;
+        width: 100%;
+       }
+      </style>
+      <label class=" control-label"> Selecteer je locatie aub.  </label>
+      <div id="mapvalidation"></div>
+      <div id="map"></div>
+      <input type="hidden" id="latLngLat" name="latLngLat" value="" required>
+      <input type="hidden" id="latLngLng" name="latLngLng" value="" required>
+      
+    </div>
+
+
+{{ Form::submit('TOEVOEGEN',array('class' =>'btn btn-success pull-left', 'style'=>'margin-top:20px','id'=>'submit'))}}
+{!! Form::close() !!}
+
+    <br>
+    <br>
+    <br>
+    <br>
+
+
+  </div>
+  @endsection @section('scripts') 
+  <script type="text/javascript" src="{{ asset('js/jquery-validation/jquery.validate.js') }}"></script>
+    <script src="https://cdn.jsdelivr.net/jquery.validation/1.16.0/additional-methods.min.js"></script>
+
+      <script>
+    $(document).ready(function() {
+        $('#article').validate({
+            
+            rules: {
+                title: {
+                  required: true,
+                },
+                
+
+                text: {
+                  required: true,
+
+                },
+                tijdstip: {
+                  required: true,
+
+                },
+                category_id: {
+                  required: true,
+
+                },
+                datum: {
+                  required: true,
+
+                },
+
+                pic2: {
+                  required: true, 
+                  accept: "image/jpg,image/jpeg,image/png,image/gif"
+                  }
+
+            },
+            
+            messages: {
+              title : 'moet een title bevatten.',
+              text : 'moet een omschrijving bevatten.',
+              pic : {required: 'Required!', accept: 'Not an image!'}
+                
+            },
+        highlight: function (input) {
+            $(input).parent().addClass('error');
+        },
+        unhighlight: function (input) {
+            $(input).parent().removeClass('error');
+        },
+        errorPlacement: function (error, element) {
+
+          if(element.attr("name") == "pic2") {
+                error.appendTo($('.img_error'));
+            } else {
+              $(element).parent().append(error);
+
+            }    
+          },
+
+           submitHandler: function(form) {
+
+            $('#article')[0].submit();
+            }
+    
+        });
+
+    });
+
+
+var map, infoWindow;
+      function initMap() {
+        map = new google.maps.Map(document.getElementById('map'), {
+          center: {lat: -34.397, lng: 150.644},
+          zoom: 6
+        });
+        infoWindow = new google.maps.InfoWindow;
+
+        // Try HTML5 geolocation.
+        if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition(function(position) {
+            var pos = {
+              lat: position.coords.latitude,
+              lng: position.coords.longitude
+            };
+
+            infoWindow.setPosition(pos);
+            infoWindow.setContent('Location found.');
+            infoWindow.open(map);
+            map.setCenter(pos);
+          }, function() {
+            handleLocationError(true, infoWindow, map.getCenter());
+          });
+        } else {
+          // Browser doesn't support Geolocation
+          handleLocationError(false, infoWindow, map.getCenter());
+        }
+      }
+
+      function handleLocationError(browserHasGeolocation, infoWindow, pos) {
+        infoWindow.setPosition(pos);
+        infoWindow.setContent(browserHasGeolocation ?
+                              'Error: The Geolocation service failed.' :
+                              'Error: Your browser doesn\'t support geolocation.');
+        infoWindow.open(map);
+      }
+    </script>
+    <script async defer
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC9J-fz25ba11CPhJrLzgGkEAmdDdJvK4U&callback=initMap">
+    </script>
+ @endsection
